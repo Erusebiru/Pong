@@ -1,41 +1,40 @@
 
-
-/*function createElement(parent,element,text,params){
-    if(params === null || params === undefined){
-        params = {};
-    }
-    
-    const item = $('<' + element + '>')
-                    .text(text)
-                    .attr(params)
-                    .appendTo(parent);
-        
-    return item;
-}
-
-function createStructure(parent,params,data){
-    if(data === null || data === undefined){
-        console.error("No hay datos.");
-        return;
+class Ball{
+    object;
+    direction;
+    angle;
+    top;
+    left;
+    constructor(object,direction,angle,top,left){
+        this.object = object;
+        this.direction = direction;
+        this.angle = angle;
+        this.top = top;
+        this.left = left;
     }
 
-    const table = createElement(parent,'table',undefined,params.table);
-    data.forEach(function(element){
-       
-    });
-    
+    set direction(direction){
+        this.direction = direction;
+    }
+
+    get top(){
+        return this.top;
+    }
+
+    set top(top){
+        this.object.css({'top':this.top-1})
+        this.top = top;
+    }
+
+    get left(){
+        return this.left;
+    }
+
+    set left(left){
+        this.object.css({'left':this.left+5})
+        this.left = left;
+    }
 }
-
-var item = createElement('.container','div',undefined,{class:'title'})
-
-var data = [
-    {'Nombre':'Ruben'},
-    {'Nombre':'Alba'},
-    {'Nombre':'Goonie'},
-    {'Nombre':'Pu'}
-];
-
-createStructure('.title',{table:{class:'table'}},data);*/
 
 function moveUp(player){
     
@@ -51,22 +50,13 @@ function moveDown(player){
     }
 }
 
-/*function getPositions(element){
-    var position = element.position();
-    var width = element.width();
-    var height = element.height();
-
-    return [[position.left, position.left + width], [position.top, position.top + height]];
-}*/
-
 function stopBall(ball,player,direction){
     if(direction === "right"){
         var r1 = player.position().left < ball.position().left + player.outerWidth(true) - 5 ? true : false;
-        var end = ball.position().left >= $('.box').width() ? true : false;
-        
+        var end = ball.position().left >= $('.box').width() - 20 ? true : false;
     }else{
         var r1 = player.position().left > ball.position().left - player.outerWidth(true) ? true : false;
-        var end = ball.position().left < 0 ? true : false;
+        var end = ball.position().left < 12 ? true : false;
     }
 
     var r2 = player.position().top > ball.position().top ? true : false;
@@ -90,6 +80,12 @@ function stopBall(ball,player,direction){
     
 }
 
+function checkBorder(ball){
+    var end = ball.position().top < 10 ? true : false;
+    ball.css({'top':ball.position().top-1})
+
+}
+
 function startGame(ball,player1,player2){
     var direction = "right";
     
@@ -98,11 +94,12 @@ function startGame(ball,player1,player2){
         if(direction === "right"){
             let game = stopBall(ball,player2,direction);
             ball.css({'left':ball.position().left+5})
+            checkBorder(ball)
             if(game === true){
                 
             }else if(game === "fin"){
-                $('.result.left').text(parseInt($('.result.left').text())+1);
                 clearInterval(moving)
+                $('.result.left').text(parseInt($('.result.left').text())+1);
             }  else{
                 direction = "left";
             }
@@ -112,8 +109,8 @@ function startGame(ball,player1,player2){
             if(game === true){
             
             }else if(game === "fin"){
-                $('.result.right').text(parseInt($('.result.right').text())+1);
                 clearInterval(moving)
+                $('.result.right').text(parseInt($('.result.right').text())+1);
             }else{
                 direction = "right";
             }
@@ -126,6 +123,9 @@ $(document).on('keypress',function(e){
     const player1 = $('.player.left');
     const player2 = $('.player.right');
     const ball = $('.ball');
+    const ball2 = new Ball($('.ball'),'right',undefined,'400','500')
+    ball2.top = '430';
+    console.log(ball2.top)
     switch(e.which){
         case 32:
             startGame(ball,player1,player2);
