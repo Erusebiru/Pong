@@ -61,11 +61,17 @@ function getPositions(element){
 
 function comparePositions(ball,player){
     var r1 = player.position().left < ball.position().left + player.outerWidth(true) - 5 ? true : false;
-    var r2 = player.position().top < ball.position().top ? true : false;
-    var r3 = player.position().top + player.outerHeight(true) > ball.position().top ? true : false;
+    var r2 = player.position().top > ball.position().top ? true : false;
+    var r3 = player.position().top + player.outerHeight(true) < ball.position().top ? true : false;
     
-    if(!r2 || !r3 || r1){
-        return false;
+    if(r1){
+        if(r3){
+            return true;
+        }else if(r2){
+            return true;
+        }else{
+            return false;
+        }
     }else{
         return true;
     }
