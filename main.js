@@ -13,6 +13,10 @@ class Ball{
         this.left = left;
     }
 
+    get direction(){
+        return this.direction;
+    }
+
     set direction(direction){
         this.direction = direction;
     }
@@ -30,9 +34,15 @@ class Ball{
         return this.left;
     }
 
-    set left(left){
+    MoveRight(){
         this.object.css({'left':this.left+5})
-        this.left = left;
+        this.left = this.object.position().left;
+    }
+
+    MoveLeft(){
+        this.object.css({'left':this.left-5})
+        this.left = this.object.position().left;
+
     }
 }
 
@@ -50,17 +60,18 @@ function moveDown(player){
     }
 }
 
-function stopBall(ball,player,direction){
-    if(direction === "right"){
-        var r1 = player.position().left < ball.position().left + player.outerWidth(true) - 5 ? true : false;
-        var end = ball.position().left >= $('.box').width() - 20 ? true : false;
+function stopBall(ball,player){
+    
+    if(ball.direction === "right"){
+        var r1 = player.position().left < ball.left + player.outerWidth(true) ? true : false;
+        var end = ball.left >= $('.box').width() - 20 ? true : false;
     }else{
-        var r1 = player.position().left > ball.position().left - player.outerWidth(true) ? true : false;
-        var end = ball.position().left < 12 ? true : false;
+        var r1 = player.position().left > ball.left - player.outerWidth(true) ? true : false;
+        var end = ball.left < 12 ? true : false;
     }
 
-    var r2 = player.position().top > ball.position().top ? true : false;
-    var r3 = player.position().top + player.outerHeight(true) < ball.position().top ? true : false;
+    var r2 = player.position().top > ball.top ? true : false;
+    var r3 = player.position().top + player.outerHeight(true) < ball.top ? true : false;
 
     if(end){
         return "fin";
@@ -87,32 +98,31 @@ function checkBorder(ball){
 }
 
 function startGame(ball,player1,player2){
-    var direction = "right";
+    //var direction = "right";
     
     var moving = setInterval(function(){
-        
-        if(direction === "right"){
-            let game = stopBall(ball,player2,direction);
-            ball.css({'left':ball.position().left+5})
-            checkBorder(ball)
+        if(ball.direction === "right"){
+            let game = stopBall(ball,player2);
+            ball.MoveRight();
+            //checkBorder(ball.object)
             if(game === true){
                 
             }else if(game === "fin"){
                 clearInterval(moving)
                 $('.result.left').text(parseInt($('.result.left').text())+1);
             }  else{
-                direction = "left";
+                ball.direction = "left";
             }
-        }else if(direction === "left"){
-            let game = stopBall(ball,player1,direction);
-            ball.css({'left':ball.position().left-5})
+        }else if(ball.direction === "left"){
+            let game = stopBall(ball,player1);
+            ball.MoveLeft();
             if(game === true){
             
             }else if(game === "fin"){
                 clearInterval(moving)
                 $('.result.right').text(parseInt($('.result.right').text())+1);
             }else{
-                direction = "right";
+                ball.direction = "right";
             }
         }
         
@@ -122,10 +132,8 @@ function startGame(ball,player1,player2){
 $(document).on('keypress',function(e){
     const player1 = $('.player.left');
     const player2 = $('.player.right');
-    const ball = $('.ball');
-    const ball2 = new Ball($('.ball'),'right',undefined,'400','500')
-    ball2.top = '430';
-    console.log(ball2.top)
+    //const ball = $('.ball');
+    const ball = new Ball($('.ball'),'right',undefined,$('.ball').position().top,$('.ball').position().left)
     switch(e.which){
         case 32:
             startGame(ball,player1,player2);
