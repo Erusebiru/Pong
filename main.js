@@ -1,85 +1,22 @@
-
-class Ball{
-    object;
-    direction;
-    angle;
-    top;
-    left;
-    constructor(object,direction,angle,top,left){
-        this.object = object;
-        this.direction = direction;
-        this.angle = angle;
-        this.top = top;
-        this.left = left;
-    }
-
-    get direction(){
-        return this.direction;
-    }
-
-    set direction(direction){
-        this.direction = direction;
-    }
-
-    get top(){
-        return this.top;
-    }
-
-    set top(top){
-        this.object.css({'top':this.top-1})
-        this.top = top;
-    }
-
-    get left(){
-        return this.left;
-    }
-
-    MoveRight(){
-        this.object.css({'left':this.left+5})
-        this.left = this.object.position().left;
-    }
-
-    MoveLeft(){
-        this.object.css({'left':this.left-5})
-        this.left = this.object.position().left;
-
-    }
-}
-
-function moveUp(player){
-    
-    if(player.position().top > 2){
-        player.css({'bottom':'initial','top':player.position().top-5});
-    }
-    
-}
-
-function moveDown(player){
-    if(player.position().top + 100 < 482){
-        player.css({'bottom':'initial','top':player.position().top+5});
-    }
-}
+var moving; 
 
 function stopBall(ball,player){
-    
     if(ball.direction === "right"){
-        var r1 = player.position().left < ball.left + player.outerWidth(true) ? true : false;
+        var r1 = player.left < ball.left + player.object.outerWidth(true) ? true : false;
         var end = ball.left >= $('.box').width() - 20 ? true : false;
     }else{
-        var r1 = player.position().left > ball.left - player.outerWidth(true) ? true : false;
-        var end = ball.left < 12 ? true : false;
+        var r1 = player.left > ball.left - player.object.outerWidth(true) ? true : false;
+        var end = ball.left < 4 ? true : false;
     }
 
-    var r2 = player.position().top > ball.top ? true : false;
-    var r3 = player.position().top + player.outerHeight(true) < ball.top ? true : false;
+    var r2 = player.top > ball.top + 10 ? true : false;
+    var r3 = player.top + player.object.outerHeight(true) < ball.top ? true : false;
 
     if(end){
         return "fin";
     }else{
         if(r1){
-            if(r3){
-                return true;
-            }else if(r2){
+            if(r3 || r2){
                 return true;
             }else{
                 return false;
@@ -88,68 +25,141 @@ function stopBall(ball,player){
             return true;
         }
     }
-    
 }
 
-function checkBorder(ball){
-    var end = ball.position().top < 10 ? true : false;
-    ball.css({'top':ball.position().top-1})
+function checkUpBorder(ball){
+    var end = ball.top < 2 ? true : false;
+    
+    return end;
+}
 
+function checkDownBorder(ball){
+    var end = ball.top >= $('.box').height() -20 ? true : false;
+    
+    return end;
+}
+
+function whereHitted(ball,player){
+    var r1 = player.top < ball.top && player.top + (player.object.outerHeight(true) / 5) >= ball.top ? true : false;
+    var r2 = player.top + (player.object.outerHeight(true) / 5) < ball.top && player.top + (player.object.outerHeight(true) / 5 * 2) >= ball.top ? true : false;
+    var r3 = player.top + (player.object.outerHeight(true) / 5 * 3) < ball.top && player.top + (player.object.outerHeight(true) / 5 * 4) > ball.top ? true : false;
+    var r4 = player.top + (player.object.outerHeight(true) / 5 * 4) < ball.top && player.top + player.object.outerHeight(true) > ball.top ? true : false;
+
+    if(r1){
+        return -3;
+    }else if(r2){
+        return -2;
+    }else if(r3){
+        return +2;
+    }else if(r4){
+        return +3;
+    }else{
+        return 0;
+    }
+}
+
+function active(ball,player,oppDirection){
+    let game = stopBall(ball,player);
+    if(game === true){
+        ball.MoveWithAngle();
+    }else if(game === "fin"){
+        clearInterval(moving)
+        goal(player);
+    } else{
+        ball.angle = whereHitted(ball,player);
+        ball.direction = oppDirection;
+    }
+}
+
+function goal(player){
+    if(player.object.hasClass("right")){
+        player1.scoreUp(player1.score + 1);
+        $('.goal').text("GOL DEL PLAYER 2");
+    }else{
+        player2.scoreUp(player2.score + 1);
+        $('.goal').text("GOL DEL PLAYER 1");
+    }
+
+    $('.goal').show();
 }
 
 function startGame(ball,player1,player2){
-    //var direction = "right";
-    
-    var moving = setInterval(function(){
-        if(ball.direction === "right"){
-            let game = stopBall(ball,player2);
-            ball.MoveRight();
-            //checkBorder(ball.object)
-            if(game === true){
-                
-            }else if(game === "fin"){
-                clearInterval(moving)
-                $('.result.left').text(parseInt($('.result.left').text())+1);
-            }  else{
-                ball.direction = "left";
+    moving = setInterval(function(){
+        if(!game.paused){
+            if(checkUpBorder(ball) || checkDownBorder(ball)){
+                ball.angle = ball.angle * (-1);
             }
-        }else if(ball.direction === "left"){
-            let game = stopBall(ball,player1);
-            ball.MoveLeft();
-            if(game === true){
-            
-            }else if(game === "fin"){
-                clearInterval(moving)
-                $('.result.right').text(parseInt($('.result.right').text())+1);
-            }else{
-                ball.direction = "right";
+
+            if(ball.direction === "right"){
+                ball.MoveRight();
+                active(ball,player2,"left")
+            }else if(ball.direction === "left"){
+                ball.MoveLeft();
+                active(ball,player1,"right")
             }
         }
-        
-    },15);
+    },game.level);
 }
 
 $(document).on('keypress',function(e){
-    const player1 = $('.player.left');
-    const player2 = $('.player.right');
-    //const ball = $('.ball');
-    const ball = new Ball($('.ball'),'right',undefined,$('.ball').position().top,$('.ball').position().left)
     switch(e.which){
         case 32:
-            startGame(ball,player1,player2);
+            if(!game.started){
+                game.started = true;
+                startGame(ball,player1,player2);
+            }
             break;
         case 119: 
-            moveUp(player1); 
+            player1.moveUp($('.box')); 
             break;
         case 115: 
-            moveDown(player1); 
+            player1.moveDown($('.box')); 
             break;
         case 56:
-            moveUp(player2);
+            player2.moveUp($('.box'));
             break;
         case 50:
-            moveDown(player2);
+            player2.moveDown($('.box'));
+            break;
+        case 80:
+        case 112:
+            if(!game.paused){
+                game.paused = true;
+                $('.pause').show();
+            }else{
+                game.paused = false;
+                $('.pause').hide();
+            }
             break;
     }
 });
 
+const game = new Game(
+    false,
+    5,
+    {"top":$('.ball').position().top,"left":$('.ball').position().left},
+    {"top":$('.player.left').position().top+5,"left":$('.player.left').position().left},
+    {"top":$('.player.right').position().top+5,"left":$('.player.right').position().left},
+    false
+);
+const player1 = new Player(
+    $('.player.left'),
+    $('.player.left').position().top+5,
+    $('.player.left').position().left,
+    0,
+    $('.score.left')
+);
+const player2 = new Player(
+    $('.player.right'),
+    $('.player.right').position().top+5,
+    $('.player.right').position().left,
+    0,
+    $('.score.right')
+);
+const ball = new Ball(
+    $('.ball'),
+    'right',
+    0,
+    $('.ball').position().top,
+    $('.ball').position().left
+);
