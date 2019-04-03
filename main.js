@@ -60,6 +60,7 @@ function whereHitted(ball,player){
 
 function active(ball,player,oppDirection){
     let game = stopBall(ball,player);
+    
     if(game === true){
         ball.MoveWithAngle();
     }else if(game === "fin"){
@@ -81,15 +82,25 @@ function goal(player){
     }
 
     $('.goal').show();
+    game.scored = true;
+    game.started = false;
+}
+
+function defaultLocations(ball,player1,player2){
+    player1.setDefault();
+    player2.setDefault();
+    ball.setDefault();
 }
 
 function startGame(ball,player1,player2){
+    
     moving = setInterval(function(){
+        
         if(!game.paused){
             if(checkUpBorder(ball) || checkDownBorder(ball)){
                 ball.angle = ball.angle * (-1);
             }
-
+            
             if(ball.direction === "right"){
                 ball.MoveRight();
                 active(ball,player2,"left")
@@ -103,9 +114,16 @@ function startGame(ball,player1,player2){
 
 $(document).on('keypress',function(e){
     switch(e.which){
+        
         case 32:
             if(!game.started){
+                if(game.scored){
+                    defaultLocations(ball,player1,player2);
+                    $('.goal').hide();
+                }
+                
                 game.started = true;
+                game.scored = false;
                 startGame(ball,player1,player2);
             }
             break;
@@ -123,7 +141,7 @@ $(document).on('keypress',function(e){
             break;
         case 80:
         case 112:
-            if(!game.paused){
+            if(!game.paused && game.started && !game.scored){
                 game.paused = true;
                 $('.pause').show();
             }else{
@@ -137,29 +155,30 @@ $(document).on('keypress',function(e){
 const game = new Game(
     false,
     5,
-    {"top":$('.ball').position().top,"left":$('.ball').position().left},
-    {"top":$('.player.left').position().top+5,"left":$('.player.left').position().left},
-    {"top":$('.player.right').position().top+5,"left":$('.player.right').position().left},
+    false,
     false
 );
 const player1 = new Player(
     $('.player.left'),
-    $('.player.left').position().top+5,
+    $('.player.left').position().top,
     $('.player.left').position().left,
     0,
-    $('.score.left')
+    $('.score.left'),
+    {"top":$('.player.left').position().top,"left":$('.player.left').position().left}
 );
 const player2 = new Player(
     $('.player.right'),
-    $('.player.right').position().top+5,
+    $('.player.right').position().top,
     $('.player.right').position().left,
     0,
-    $('.score.right')
+    $('.score.right'),
+    {"top":$('.player.right').position().top,"left":$('.player.right').position().left}
 );
 const ball = new Ball(
     $('.ball'),
     'right',
     0,
     $('.ball').position().top,
-    $('.ball').position().left
+    $('.ball').position().left,
+    {"top":$('.ball').position().top,"left":$('.ball').position().left,"angle":0,"direction":"right"}
 );
