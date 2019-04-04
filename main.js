@@ -75,10 +75,10 @@ function active(ball,player,oppDirection){
 function goal(player){
     if(player.object.hasClass("right")){
         player1.scoreUp(player1.score + 1);
-        $('.goal').text("GOL DEL PLAYER 2");
+        $('.goal').text("GOL DEL PLAYER 1");
     }else{
         player2.scoreUp(player2.score + 1);
-        $('.goal').text("GOL DEL PLAYER 1");
+        $('.goal').text("GOL DEL PLAYER 2");
     }
 
     $('.goal').show();
@@ -154,7 +154,7 @@ $(document).on('keypress',function(e){
 
 const game = new Game(
     false,
-    5,
+    10,
     false,
     false
 );
